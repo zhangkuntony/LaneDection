@@ -120,9 +120,16 @@ def calibrate_camera_params(calibration_files: List[str]) -> Tuple[bool, Optiona
         print("错误: 没有找到有效的棋盘格角点")
         return False, None, None, None, None
     
-    # 相机标定
+    # 确保image_size是明确的元组类型
+    if image_size is None:
+        print("错误: 无法获取图像尺寸")
+        return False, None, None, None, None
+    
+    image_size_tuple = (int(image_size[0]), int(image_size[1]))
+    
+    # 相机标定 - 直接使用列表，OpenCV会自动处理类型转换
     ret, cmt, dist, rvecs, tvecs = cv2.calibrateCamera(
-        object_points, image_points, image_size, None, None
+        object_points, image_points, image_size_tuple, None, None
     )
     
     return ret, cmt, dist, rvecs, tvecs

@@ -1,4 +1,4 @@
-from moviepy import VideoFileClip
+from moviepy.editor import VideoFileClip
 
 import cv2
 import numpy as np
@@ -248,7 +248,7 @@ def cal_center_departure(img, left_fit, right_fit):
         cv2.putText(img, 'Vehicle is in the center', (20, 100), cv2.FONT_ITALIC, 1, (255, 255, 255), 5)
     return img
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ret, mtx, dist, rvecs, tvecs = cal_calibrate_params(file_paths)
     # if np.all(mtx != None):
     #     img = cv2.imread("./test/test1.jpg")
@@ -274,7 +274,6 @@ if __name__ == '__main__':
     # plt.imshow(img[:, :, ::-1])
     # plt.title("原图")
     # plt.show()
-
     M, M_inverse = cal_perspective_params(img, points)
     # if np.all(M != None):
     #     trasform_img = img_perspect_transform(img, M)
@@ -305,33 +304,32 @@ if __name__ == '__main__':
     # plt.imshow(res[:, :, ::-1])
     # plt.title("安全区域")
     # plt.show()
-
     lane_center = cal_line_center(img)
     print("中心点位置：{}".format(lane_center))
 
 def process_image(img):
     # 图像去畸变
-    undistort_img = img_undistort(img, mtx, dist)
+    undistort_img = img_undistort(img,mtx,dist)
     # 车道线检测
-    rig_in_pipeline_img = pipeline(undistort_img)
+    rigin_pipline_img = pipeline(undistort_img)
     # 透视变换
-    transform_img = img_perspect_transform(rig_in_pipeline_img, M)
+    transform_img = img_perspect_transform(rigin_pipline_img,M)
     # 拟合车道线
-    left_fit, right_fit = cal_line_param(transform_img)
+    left_fit,right_fit = cal_line_param(transform_img)
     # 绘制安全区域
-    result = fill_lane_poly(transform_img, left_fit, right_fit)
-    transform_img_inv = img_perspect_transform(result, M_inverse)
+    result = fill_lane_poly(transform_img,left_fit,right_fit)
+    transform_img_inv = img_perspect_transform(result,M_inverse)
 
     # 曲率和偏离距离
-    transform_img_inv = cal_radius(transform_img, left_fit, right_fit)
-    transform_img_inv = cal_center_departure(transform_img, left_fit, right_fit)
-    transform_img_inv = cv2.addWeighted(transform_img_inv, 1, transform_img, 0.5, 0)
+    transform_img_inv = cal_radius(transform_img_inv,left_fit,right_fit)
+    transform_img_inv = cal_center_departure(transform_img_inv,left_fit,right_fit)
+    transform_img_inv = cv2.addWeighted(undistort_img,1,transform_img_inv,0.5,0)
     return transform_img_inv
 
 # 视频处理
 # 适用于moviepy 2.2.1的解决方案
 clip1 = VideoFileClip("project_video.mp4")
-white_clip = clip1.subclipped().fl_image(process_image)  # 使用subclip().fl_image()
+white_clip = clip1.fl_image(process_image)
 white_clip.write_videofile("output.mp4", audio=False)
 
 
